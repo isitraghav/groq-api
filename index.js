@@ -37,19 +37,22 @@ app.use(limiter);
 
 app.post("/api/completion", async (req, res) => {
   const groq = new Groq({ apiKey: process.env.APIKEY });
+  let context = [
+    {
+      role: "system",
+      content: req.body.sysprompt,
+    },
+    {
+      role: "user",
+      content: req.body.prompt,
+    },
+  ];
+
+  context = [...context, ...req.body.context];
 
   groq.chat.completions
     .create({
-      messages: [
-        {
-          role: "system",
-          content: req.body.sysprompt,
-        },
-        {
-          role: "user",
-          content: req.body.prompt,
-        },
-      ],
+      messages: context,
       model: "llama3-8b-8192",
     })
     .then((response) => {
